@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单词听写</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f8ff;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        #status {
+            font-size: 1.5em;
+            margin: 20px 0;
+            color: #4CAF50;
+        }
+        #result {
+            font-size: 1.2em;
+            margin: 20px 0;
+            color: #333;
+            text-align: left;
+            display: none; /* 初始隐藏结果 */
+        }
+        #start-btn, #interval-btn {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 10px;
+        }
+        #start-btn:hover, #interval-btn:hover {
+            background-color: #45a049;
+        }
+        #interval-input {
+            padding: 10px;
+            font-size: 1em;
+            width: 100px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>单词听写练习</h1>
+    <div id="status">点击“开始”按钮听写单词</div>
+    <div id="result"></div>
+    <button id="start-btn">开始</button>
+    <br>
+    <input type="number" id="interval-input" placeholder="间隔时间（秒）" min="1" value="10">
+    <button id="interval-btn">设置间隔</button>
+
+    <script>
+        // 单词列表
+        const words = [
+            { word: "season", chinese: "季节" },
+            { word: "spring", chinese: "春天" },
+            { word: "summer", chinese: "夏天" },
+            { word: "autumn", chinese: "秋天" },
+            { word: "winter", chinese: "冬天" },
+            { word: "ski", chinese: "滑雪" },
+            { word: "plant", chinese: "种植" },
+            { word: "camp", chinese: "露营" },
+            { word: "go skiing", chinese: "去滑雪" },
+            { word: "go camping", chinese: "去露营" },
+            { word: "plant flowers", chinese: "种花" },
+            { word: "colourful", chinese: "多彩的" },
+            { word: "prefer", chinese: "更喜欢" },
+            { word: "either", chinese: "要么" }
+        ];
+
+        let currentWordIndex = 0;
+        let currentRepeat = 0;
+        let timer;
+        let intervalTime = 10000; // 默认间隔10秒
+
+        // 语音合成函数
+        function speakWord(word) {
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-US'; // 设置为英语发音
+            speechSynthesis.speak(utterance);
+        }
+
+        // 开始听写
+        function startDictation() {
+            const wordObj = words[currentWordIndex];
+            speakWord(wordObj.word);
+            currentRepeat++;
+
+            if (currentRepeat < 3) {
+                timer = setTimeout(startDictation, intervalTime); // 根据设置的时间间隔重复
+            } else {
+                currentRepeat = 0;
+                currentWordIndex++;
+                if (currentWordIndex < words.length) {
+                    timer = setTimeout(startDictation, intervalTime); // 下一个单词
+                } else {
+                    document.getElementById('status').textContent = "听写结束！";
+                    showResult(); // 显示所有单词和意思
+                }
+            }
+        }
+
+        // 显示所有单词和意思
+        function showResult() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = "<h2>听写结果：</h2>";
+            words.forEach(wordObj => {
+                resultDiv.innerHTML += `<p><strong>${wordObj.word}</strong> - ${wordObj.chinese}</p>`;
+            });
+            resultDiv.style.display = 'block'; // 显示结果
+        }
+
+        // 开始按钮点击事件
+        document.getElementById('start-btn').addEventListener('click', () => {
+            currentWordIndex = 0;
+            currentRepeat = 0;
+            clearTimeout(timer); // 清除之前的计时器
+            document.getElementById('status').textContent = "正在听写中...";
+            document.getElementById('result').style.display = 'none'; // 隐藏结果
+            startDictation(); // 开始第一个单词
+        });
+
+        // 设置间隔时间
+        document.getElementById('interval-btn').addEventListener('click', () => {
+            const input = document.getElementById('interval-input').value;
+            if (input && input > 0) {
+                intervalTime = input * 1000; // 转换为毫秒
+                alert(`间隔时间已设置为 ${input} 秒`);
+            } else {
+                alert("请输入有效的间隔时间！");
+            }
+        });
+    </script>
+</body>
+</html>
